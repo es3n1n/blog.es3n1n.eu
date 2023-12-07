@@ -1,0 +1,59 @@
+baseURL         = "https://0a8f-113-166-212-162.ngrok-free.app/"
+languageCode    = "en-us"
+title           = "es3n1n's Blog"
+theme           = "ezhil"
+paginate        = 6
+
+# pygmentsstyle                   = "modus-vivendi"
+pygmentsstyle                   = "onedark"
+pygmentscodefences              = true
+pygmentscodefencesguesssyntax   = true
+pygmentsUseClasses = false
+
+googleAnalytics = ""
+
+summaryLength   = 40
+copyright       = "Copyright © Arsenii es3n1n 2023"
+
+[params]
+    subtitle        = "Reverse engineering, programming and some other boring stuff."
+    mode            = "dark"
+
+    customCSS       = "css/patches.css"
+    customDarkCSS   = "css/dark_patches.css"
+
+    favicon         = "/favicon.png"
+
+    [[params.social]]
+        name    = "Twitter"
+        icon    = "twitter"
+        url     = "https://twitter.com/es3n1n"
+    
+    [[params.social]]
+        name    = "GitHub"
+        icon    = "github"
+        url     = "https://github.com/es3n1n"
+    
+[menu]
+    [[menu.main]]
+        name    = "Home"
+        url     = "/"
+        weight  = 1
+    
+    [[menu.main]]
+        name    = "All Posts"
+        url     = "/posts"
+        weight  = 2
+    
+    [[menu.main]]
+        name    = "Tags"
+        url     = "/tags"
+        weight  = 3
+
+    [[menu.main]]
+        name    = "About"
+        url     = "/about"
+        weight  = 4
+
+[taxonomies]
+    tag = "tags"
