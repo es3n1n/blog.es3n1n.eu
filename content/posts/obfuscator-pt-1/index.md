@@ -335,7 +335,7 @@ While we're iterating through all the instructions that should be executed befor
 
 This part is a bit tricky because normally you'll see [JE](/posts/obfuscator-pt-1/#acronyms)/[JNE](/posts/obfuscator-pt-1/#acronyms) instructions that would check for the [JumpTable](/posts/obfuscator-pt-1/#acronyms) bounds first. Like this `cmp eax, 0x6; ja somewhere` in my example.
 
-But the thing is, this instruction would be inserted into binary **only** when the compiler is not sure that you are handling all cases**. This basically means that if you make a switch with 256 entries and compare the `uint8_t` value *(its max value is `0xFF`)*, you will see a stub like this.
+But the thing is, this instruction would be inserted into binary **only** when the compiler is not sure that you are handling all cases. This basically means that if you make a switch with 256 entries and compare the `uint8_t` value *(its max value is `0xFF`)*, you will see a stub like this.
 
 ```asm
 lea     rdx, [rel __dos_header] ; base_mov
