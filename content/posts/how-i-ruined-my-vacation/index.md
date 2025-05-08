@@ -40,21 +40,21 @@ As a reference implementation, I took the WSC registration implementation made b
 
 Essentially, WSC has a COM API that all antiviruses are using, so I quickly rebuilt everything that AV was doing with it in ~1hr, booted an arm64 windows in parallels and tested the thing. I was greeted with an access denied error.
 
-![access_denied](./pics/access_denied_error.png)
+![access_denied](/posts/how-i-ruined-my-vacation/pics/access_denied_error.png)
 
 But from my last year's courtesy I knew that WSC was somehow validating the process that calls these APIs, my guess was that they are validating the signatures, which was indeed a correct guess but I didn't know that for sure at that time.
 
 My move then was to inject into the same process that is doing all the WSC stuff for that AV and execute my code from there, when I did that this is what come out:
 
-![first_success](./pics/first_success.png)
+![first_success](/posts/how-i-ruined-my-vacation/pics/first_success.png)
 
 Then, I recreated an another COM call to update the status of my fresh-new antivirus I registered and everything worked like a charm as well!
 
-![twitter_pic](./pics/twitter_pic.png)
+![twitter_pic](/posts/how-i-ruined-my-vacation/pics/twitter_pic.png)
 
 As you might have guessed, this is exactly the image I posted on twitter to let my beloved followers know that I might have something cooking:
 
-![tweet](./pics/first_tweet.png)
+![tweet](/posts/how-i-ruined-my-vacation/pics/first_tweet.png)
 
 ## Trying to get rid of the AVs binary (Day 1)
 
@@ -66,7 +66,7 @@ As a first victim process I chose `cmd.exe` for no particular reason, just the f
 
 After a quick look at `wscsvc.dll`, I found out that the binary was doing some calls to check for PPL, but the binary I was running was created using just simple `CreateProcessA` call, there is no way it was PPL protected *(and it indeed was not)*.
 
-![ppl_guessing](./pics/ppl_guessing.png)
+![ppl_guessing](/posts/how-i-ruined-my-vacation/pics/ppl_guessing.png)
 
 It was already pretty late in the morning so I went to sleep.
 
@@ -74,7 +74,7 @@ It was already pretty late in the morning so I went to sleep.
 
 When I woke up, I tried a bunch of other system processes but nothing really worked, so I decided that it is actually time to properly reverse engineer this service, debug it and find out what is the reason behind all this.
 
-![debug_intro](./pics/debug_intro.png)
+![debug_intro](/posts/how-i-ruined-my-vacation/pics/debug_intro.png)
 
 As you might still remember, I was working on an arm64 macbook and there currently is no sane solutions how to emulate x86 windows on arm macbooks, but I didn't feel like dealing with arm64 stuff and not being able to use my favorite x64dbg, so I asked a good friend of mine to lend me his pc while he's asleep so that I can debug the wsc service in a virtual machine that will be running on his pc.
 
@@ -121,23 +121,23 @@ So what it's doing is checking whether the process that is calling the RPC metho
 
 It was already evening (I woke up super late) and I wanted to see what happened in that function for the legit av binary I was initially testing my code in, and *for some reason, probably due to sleep deprivation* I came to the conclusion that IsMember was equals 1 for that binary. Now looking back on this, I have literally no clue why I assumed that, but I guess such things really tend to happen when you're trying to speedrun stuff.
 
-![sid_mystery](./pics/sid_mystery.png)
+![sid_mystery](/posts/how-i-ruined-my-vacation/pics/sid_mystery.png)
 
 ## Impersonating WinDefend (Day 2)
 
 After three more hours of learning how tokens in windows work, I came up with this theory:
 
-![impersonating_windefend](./pics/impersonating_windefend.png)
+![impersonating_windefend](/posts/how-i-ruined-my-vacation/pics/impersonating_windefend.png)
 
 I spent some time doing IRL things, then came up with an implementation of the described algo:
 
-![impersonated_windefend](./pics/impersonated_windefend.png)
+![impersonated_windefend](/posts/how-i-ruined-my-vacation/pics/impersonated_windefend.png)
 
 Right ahead, after chatting with my friends I wanted to test whether my code will work if I run it within the cmd that has WinDefend sid on its token.
 
 Surprise surprise, while all the COM calls returned STATUS_SUCCESS, nothing really happened. It didn't register any new AV, it didn't do anything.
 
-![status_success](./pics/status_success.png)
+![status_success](/posts/how-i-ruined-my-vacation/pics/status_success.png)
 
 ## Rebuilding validation algorithm (Day 3)
 
@@ -179,7 +179,7 @@ After taking a look at the structure of `DllCharacteristics`, I realied that the
 
 In debugger, the failing check I saw is the DllCharacteristics check, so to get a new victim process, I recreated the checks wsc is doing on a binary (`wsc-binary-check` folder in [defendnot](https://github.com/es3n1n/defendnot) repo) and tested all the System32 binaries against it.
 
-![recreated_algo](./pics/recreated_algo.jpg)
+![recreated_algo](/posts/how-i-ruined-my-vacation/pics/recreated_algo.jpg)
 
 ## Using Taskmgr as a victim process (Day 3)
 
@@ -201,9 +201,9 @@ So what happened is that it was reading an invalid `ctx.bin` file because the fu
 
 After figuring it out, I fixed this, tested and here is what happened:
 
-![worked](./pics/worked.png)
+![worked](/posts/how-i-ruined-my-vacation/pics/worked.png)
 
-![omg](./pics/omg.png)
+![omg](/posts/how-i-ruined-my-vacation/pics/omg.png)
 
 ## Cleaning up code (Day 3)
 
@@ -215,7 +215,7 @@ At 8 am, I had everything done except the autorun part because it was just not w
 
 When I woke up, I immediately started working on the autorun and realized that while I was creating a task, that the reason why my autorun code did not work is because of these two check boxes:
 
-![task_thing](./pics/task_thing.png)
+![task_thing](/posts/how-i-ruined-my-vacation/pics/task_thing.png)
 
 This is exactly what was happening. My laptop was not on the AC power and so the task simply was not executing. After unsetting these two flags, it started working.
 
@@ -230,7 +230,8 @@ Thanks for reading, a more technical documentation of wsc will be released a bit
 
 ## Acknowledgements
 
-* [pindos](https://github.com/pind0s) for heating up their room by the pc running at night so that I can debug the WSC service
-* [mrbruh](https://mrbruh.com/) for poking me into researching this and listening to my mad ideas while I was working on this
-* everyone else i was texting during these few days
-* a graffiti artist that VANDALIZED our wall
+* [Pindos](https://github.com/pind0s) for heating up their room by the pc running at night so that I can debug the WSC service
+* [MrBruh](https://mrbruh.com/) for poking me into researching this and listening to my mad ideas while I was working on this
+* Everyone else i was texting during these few days
+* I love you kimchi
+* The graffiti artist that VANDALIZED our wall
