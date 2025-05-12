@@ -6,7 +6,7 @@ draft: false
 tags: ["irl", "cpp", "rev"]
 ---
 
-In this post I will briefly describe the journey I went through while implementing [defendnot](https://github.com/es3n1n/defendnot).
+In this post I will briefly describe the journey I went through while implementing [defendnot](https://github.com/es3n1n/defendnot), a tool that disables Windows Defender by using the Windows Security Center (WSC) service API directly.
 
 Even though this is most likely not what you expected to see here, but rather than going into full technical details on how everything works, I will describe what rabbitholes I went through and how painful everything was due to my ✨special✨ environment.
 
@@ -22,7 +22,7 @@ Then, after a few weeks after the release, the project blew up quite a bit and g
 
 ## How it started
 
-Currently, even while writing this article, I am sitting in an airbnb we rented in Seoul. After numerous trips to other parts of the planet for CTFs and stuff, me and a friend of mine decided that we want to visit Seoul and arrived a few months after that.
+Currently, even while writing this article, I am sitting in an airbnb we rented in Seoul. After numerous trips to other parts of the planet for CTFs *(CTF is short for [capture the flag](https://ctftime.org/ctf-wtf/))* and stuff, me and a friend of mine decided that we want to visit Seoul and arrived a few months after that.
 
 My current main machine for non-ctf things is an M4Pro MacBook, and usually, when I am going for a CTF I bring an another x86 laptop with me to do some extensive reverse engineering/pwn stuff as it is usually built for the x86 cpus. Emulation would kind of work for this task but it is pretty painful so I just use an another laptop for all the x86 stuff.
 
