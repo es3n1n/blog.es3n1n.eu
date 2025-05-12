@@ -18,7 +18,7 @@ Almost exactly one year ago I released a tool [no-defender](https://github.com/e
 
 The part of the system that manages all this mess is called Windows Security Center - WSC for short. The way how my project worked is that it was using a thirdparty code from some already existing antivirus and forced that av to register the antivirus in WSC.
 
-Then, after a few weeks after the release, the project blew up quite a bit and gained ~1.5k stars, after that the developers of the antivirus I was using filled a DMCA takedown request and I didn't really want to do anything with that so just erased everything and called it a day.
+Then, after a few weeks after the release, the project blew up quite a bit and gained ~1.5k stars, after that the developers of the antivirus I was using filed a DMCA takedown request and I didn't really want to do anything with that so just erased everything and called it a day.
 
 ## How it started
 
