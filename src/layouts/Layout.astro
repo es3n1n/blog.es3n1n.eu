@@ -1,0 +1,30 @@
+---
+import BaseHead from '../components/BaseHead.astro'
+import ThemeToggle from '../components/ThemeToggle.astro'
+
+interface Props {
+  title: string
+  description: string
+}
+
+const { title, description } = Astro.props
+---
+
+<!doctype html>
+<html lang='en'>
+  <head>
+    <BaseHead title={title} description={description} />
+  </head>
+
+  <body>
+    <main>
+      <div class='header-line'>
+        <slot name='nav' />
+        <span class='header-sep'></span>
+        <ThemeToggle />
+      </div>
+
+      <slot />
+    </main>
+  </body>
+</html>

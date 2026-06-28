@@ -1,0 +1,428 @@
+:root {
+  --accent: #0066cc;
+  --bg: 250, 250, 245;
+  --text: 30, 30, 30;
+  --gray: 120, 120, 110;
+  --gray-light: 235, 235, 230;
+  --border: 180, 180, 170;
+  --code-bg: rgb(var(--gray-light));
+
+  --astro-code-color-text: rgb(var(--text));
+  --astro-code-color-background: var(--code-bg);
+  --astro-code-token-constant: #0550ae;
+  --astro-code-token-string: #0a3069;
+  --astro-code-token-comment: #6e7781;
+  --astro-code-token-keyword: #cf222e;
+  --astro-code-token-parameter: #24292f;
+  --astro-code-token-function: #8250df;
+  --astro-code-token-string-expression: #0a3069;
+  --astro-code-token-punctuation: #24292f;
+  --astro-code-token-link: #0969da;
+  --astro-code-token-operator: #cf222e;
+  --astro-code-token-class: #8250df;
+  --astro-code-token-property: #0550ae;
+  --astro-code-token-variable: #24292f;
+  --astro-code-token-number: #0550ae;
+  --astro-code-token-regexp: #0a3069;
+  --astro-code-token-escape: #0a3069;
+  --astro-code-token-tag: #116329;
+  --astro-code-token-attribute: #8250df;
+  --astro-code-token-decorator: #8250df;
+  --astro-code-token-meta: #24292f;
+  --astro-code-token-namespace: #8250df;
+  --astro-code-token-type: #8250df;
+  --astro-code-token-symbol: #0550ae;
+  --astro-code-token-builtin: #953800;
+  --astro-code-token-parameter-name: #24292f;
+  --astro-code-token-modifier: #8250df;
+  --astro-code-token-deprecated: #6e7781;
+  --astro-code-token-invalid: #cf222e;
+  --astro-code-token-unnecessary: #6e7781;
+  --astro-code-token-foreground: rgb(var(--text));
+  --astro-code-token-background: var(--code-bg);
+  --astro-code-token-inserted: #116329;
+}
+
+:root[data-theme='dark'] {
+  --bg: 18, 18, 18;
+  --text: 204, 204, 204;
+  --gray: 136, 136, 136;
+  --gray-light: 40, 40, 40;
+  --border: 68, 68, 68;
+  --accent: #6db3f2;
+
+  --astro-code-color-text: rgb(var(--text));
+  --astro-code-color-background: var(--code-bg);
+  --astro-code-token-constant: #79c0ff;
+  --astro-code-token-string: #a5d6ff;
+  --astro-code-token-comment: #8b949e;
+  --astro-code-token-keyword: #ff7b72;
+  --astro-code-token-parameter: #ffa657;
+  --astro-code-token-function: #d2a8ff;
+  --astro-code-token-string-expression: #a5d6ff;
+  --astro-code-token-punctuation: #8b949e;
+  --astro-code-token-link: #58a6ff;
+  --astro-code-token-operator: #ff7b72;
+  --astro-code-token-class: #d2a8ff;
+  --astro-code-token-property: #79c0ff;
+  --astro-code-token-variable: #ffa657;
+  --astro-code-token-number: #79c0ff;
+  --astro-code-token-regexp: #a5d6ff;
+  --astro-code-token-escape: #a5d6ff;
+  --astro-code-token-tag: #7ee787;
+  --astro-code-token-attribute: #d2a8ff;
+  --astro-code-token-decorator: #d2a8ff;
+  --astro-code-token-meta: #8b949e;
+  --astro-code-token-namespace: #d2a8ff;
+  --astro-code-token-type: #d2a8ff;
+  --astro-code-token-symbol: #79c0ff;
+  --astro-code-token-builtin: #ffa657;
+  --astro-code-token-parameter-name: #ffa657;
+  --astro-code-token-modifier: #d2a8ff;
+  --astro-code-token-deprecated: #8b949e;
+  --astro-code-token-invalid: #f85149;
+  --astro-code-token-unnecessary: #8b949e;
+  --astro-code-token-foreground: rgb(var(--text));
+  --astro-code-token-background: var(--code-bg);
+  --astro-code-token-inserted: #7ee787;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family:
+    'IBM Plex Mono', 'Consolas', 'Monaco', 'Lucida Console', monospace;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  color: rgb(var(--text));
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.7;
+  background-color: rgb(var(--bg));
+}
+
+main {
+  max-width: 80ch;
+  margin: 0 auto;
+  padding: 1rem 2rem 3rem 2rem;
+}
+
+strong,
+b {
+  font-weight: 600;
+}
+
+a,
+a:visited {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover,
+a:active,
+a:focus {
+  text-decoration: underline;
+}
+
+p {
+  margin: 0 0 1em 0;
+}
+
+.prose p {
+  margin-bottom: 1.5em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-weight: 400;
+  margin: 1.5em 0 0.5em 0;
+  line-height: 1.3;
+}
+
+h1 {
+  font-size: 1.1em;
+}
+
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: 1em;
+}
+
+ul,
+ol {
+  margin: 0.5em 0;
+  padding-left: 2ch;
+}
+
+li {
+  margin: 0.25em 0;
+}
+
+ul li::marker {
+  content: '- ';
+}
+
+ol {
+  list-style-type: decimal;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border: 1px solid rgb(var(--border));
+  padding: 0.5em;
+  text-align: left;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  margin: 1em 0;
+}
+
+code {
+  font-family: inherit;
+  background-color: var(--code-bg);
+  padding: 0.1em 0.3em;
+}
+
+pre {
+  font-family: inherit;
+  padding: 1em;
+  background-color: var(--code-bg);
+  border: 1px solid rgb(var(--border));
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+pre > code {
+  background: none;
+  padding: 0;
+}
+
+/* Shiki diff notation */
+pre:has(.diff) code {
+  display: grid;
+  padding-left: 1.5em;
+}
+
+pre .line {
+  min-width: max-content;
+}
+
+pre .line.diff {
+  position: relative;
+}
+
+pre .diff.add {
+  background-color: rgba(46, 160, 67, 0.15);
+}
+
+pre .diff.remove {
+  background-color: rgba(248, 81, 73, 0.15);
+}
+
+pre .diff::before {
+  position: absolute;
+  left: -1.2em;
+}
+
+pre .diff.add::before {
+  content: '+';
+  color: #2ea043;
+}
+
+pre .diff.remove::before {
+  content: '-';
+  color: #f85149;
+}
+
+blockquote {
+  border-left: 2px solid rgb(var(--border));
+  padding-left: 1em;
+  margin: 1em 0;
+  color: rgb(var(--gray));
+}
+
+hr {
+  border: none;
+  margin: 2em 0;
+  color: rgb(var(--gray));
+}
+
+/* post header */
+.post-header {
+  margin-bottom: 2em;
+}
+
+.post-header .post-title {
+  font-size: 1em;
+  font-weight: 400;
+  margin: 0 0 0.25em 0;
+  color: rgb(var(--text));
+}
+
+.post-header .post-date {
+  color: rgb(var(--gray));
+  display: block;
+  padding-left: 2ch;
+}
+
+.ascii-sep {
+  border-top: 1px solid rgb(var(--gray));
+  margin: 1em 0;
+}
+
+/* header line with nav */
+.header-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: 1em;
+  padding: 0.5em 0;
+  color: rgb(var(--gray));
+  background: rgb(var(--bg));
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-sep {
+  flex: 1;
+  height: 1px;
+  background: rgb(var(--gray));
+}
+
+/* post list */
+.post-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.post-item {
+  margin: 0.25em 0;
+  padding: 0;
+}
+
+.post-date {
+  color: rgb(var(--gray));
+}
+
+/* article styles */
+article h1::before {
+  content: '# ';
+  color: rgb(var(--gray));
+}
+article h2::before {
+  content: '## ';
+  color: rgb(var(--gray));
+}
+article h3::before {
+  content: '### ';
+  color: rgb(var(--gray));
+}
+article h4::before {
+  content: '#### ';
+  color: rgb(var(--gray));
+}
+article h5::before {
+  content: '##### ';
+  color: rgb(var(--gray));
+}
+article h6::before {
+  content: '###### ';
+  color: rgb(var(--gray));
+}
+
+article h1,
+article h2,
+article h3,
+article h4,
+article h5,
+article h6 {
+  cursor: pointer;
+  scroll-margin-top: 4.5rem;
+}
+
+.mermaid {
+  max-width: 100%;
+  overflow: auto;
+  margin: 1em 0;
+  display: flex;
+  justify-content: center;
+}
+
+.mermaid > svg {
+  max-height: 50em;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.mermaid .edgeLabel rect,
+.mermaid .label rect,
+.mermaid .cluster rect {
+  fill: transparent !important;
+  stroke: transparent !important;
+}
+
+.mermaid .node rect,
+.mermaid .node polygon,
+.mermaid .node circle,
+.mermaid .node ellipse {
+  fill: rgb(var(--bg)) !important;
+  stroke: rgb(var(--border)) !important;
+}
+
+.mermaid .edgePath path {
+  stroke: rgb(var(--gray)) !important;
+}
+
+.mermaid .label text,
+.mermaid .node text {
+  fill: rgb(var(--text)) !important;
+}
+
+/* footer */
+.footer-ascii {
+  margin-top: 3em;
+  color: rgb(var(--gray));
+  font-size: 0.9em;
+}
+
+.footer-ascii pre {
+  margin: 0;
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+}
+
+.footer-ascii .ascii-sep {
+  margin: 0 0 0.5em 0;
+}
+
+@media (max-width: 600px) {
+  main {
+    padding: 1rem;
+  }
+}

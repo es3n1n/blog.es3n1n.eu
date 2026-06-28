@@ -1,0 +1,49 @@
+{
+  "name": "new-blog",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "prettier": "prettier --write \"**/*.{ts,astro,md,mdx,json,css}\" --ignore-path .gitignore",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^4.3.14",
+    "@astrojs/rss": "^4.0.18",
+    "@shikijs/transformers": "^3.23.0",
+    "astro": "^5.18.2",
+    "mermaid": "^11.16.0"
+  },
+  "devDependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
+    "prettier": "^3.9.1",
+    "prettier-plugin-astro": "^0.14.1"
+  },
+  "prettier": {
+    "plugins": [
+      "prettier-plugin-astro",
+      "@ianvs/prettier-plugin-sort-imports"
+    ],
+    "tabWidth": 2,
+    "useTabs": false,
+    "semi": false,
+    "singleQuote": true,
+    "jsxSingleQuote": true,
+    "quoteProps": "as-needed",
+    "trailingComma": "es5",
+    "bracketSpacing": true,
+    "bracketSameLine": true,
+    "arrowParens": "avoid",
+    "overrides": [
+      {
+        "files": "*.astro",
+        "options": {
+          "parser": "astro"
+        }
+      }
+    ]
+  }
+}

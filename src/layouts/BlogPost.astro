@@ -1,0 +1,200 @@
+---
+import type { CollectionEntry } from 'astro:content'
+import { formatDate } from '../utils'
+import Layout from './Layout.astro'
+
+type Props = CollectionEntry<'blog'>['data']
+
+const { title, description, date } = Astro.props
+---
+
+<Layout title={title} description={description}>
+  <a slot='nav' href='/'>[index]</a>
+
+  <header class='post-header'>
+    <h1 class='post-title'>[ {title} ]</h1>
+    <time class='post-date'>{formatDate(date)}</time>
+  </header>
+
+  <article class='prose'>
+    <slot />
+  </article>
+
+  <div class='footer-ascii'>
+    <div class='ascii-sep'></div>
+    <pre>{`< back to `}<a href='/'>index</a>{` >`}</pre>
+  </div>
+
+  <script>
+    type Mermaid = Awaited<ReturnType<typeof loadMermaid>>
+
+    // loaded lazily and only when a diagram exists
+    let mermaidPromise:
+      Promise<(typeof import('mermaid'))['default']> | undefined
+    function loadMermaid() {
+      return (mermaidPromise ??= import('mermaid').then(m => m.default))
+    }
+
+    function currentTheme(): 'dark' | 'default' {
+      return document.documentElement.getAttribute('data-theme') === 'dark'
+        ? 'dark'
+        : 'default'
+    }
+
+    function getThemeColors() {
+      const styles = getComputedStyle(document.documentElement)
+      return {
+        text: `rgb(${styles.getPropertyValue('--text').trim()})`,
+        gray: `rgb(${styles.getPropertyValue('--gray').trim()})`,
+        bg: `rgb(${styles.getPropertyValue('--bg').trim()})`,
+      }
+    }
+
+    function initializeMermaid(mermaid: Mermaid) {
+      const colors = getThemeColors()
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: currentTheme(),
+        themeVariables: {
+          fontFamily:
+            'IBM Plex Mono, Consolas, Monaco, Lucida Console, monospace',
+          fontSize: '14px',
+          textColor: colors.text,
+          primaryTextColor: colors.text,
+          lineColor: colors.gray,
+          edgeLabelBackground: 'transparent',
+          mainBkg: colors.bg,
+          clusterBkg: colors.bg,
+        },
+      })
+    }
+
+    async function renderMermaid() {
+      const nodes = document.querySelectorAll('pre[data-language="mermaid"]')
+      if (nodes.length === 0) {
+        return
+      }
+
+      const mermaid = await loadMermaid()
+      initializeMermaid(mermaid)
+
+      for (const node of nodes) {
+        const codeEl = node.querySelector('code')
+        const text = (codeEl?.textContent || node.textContent || '').trim()
+        if (!text) {
+          continue
+        }
+
+        const container = document.createElement('div')
+        container.className = 'mermaid'
+        container.textContent = text
+        container.setAttribute('data-source', text)
+        node.replaceWith(container)
+      }
+
+      if (document.querySelectorAll('.mermaid').length > 0) {
+        await mermaid.run({ querySelector: '.mermaid' })
+      }
+    }
+
+    async function rerenderMermaid() {
+      const diagrams = document.querySelectorAll<HTMLElement>('.mermaid')
+      if (diagrams.length === 0) {
+        return
+      }
+
+      const mermaid = await loadMermaid()
+      initializeMermaid(mermaid)
+
+      for (const el of diagrams) {
+        // stupid workaround to prevent layout shift, i hate this
+        const rect = el.getBoundingClientRect()
+        el.style.minWidth = `${rect.width}px`
+        el.style.minHeight = `${rect.height}px`
+
+        const src = el.getAttribute('data-source') || ''
+        if (!src.trim()) {
+          continue
+        }
+
+        el.removeAttribute('data-processed')
+        el.textContent = src
+      }
+
+      await mermaid.run({ querySelector: '.mermaid' })
+
+      requestAnimationFrame(() => {
+        for (const el of diagrams) {
+          el.style.minWidth = ''
+          el.style.minHeight = ''
+        }
+      })
+    }
+
+    function enableHeadingAnchors() {
+      const article = document.querySelector('article')
+      if (!article) {
+        return
+      }
+
+      for (const h of article.querySelectorAll('h1, h2, h3, h4, h5, h6')) {
+        if (!h.getAttribute('tabindex')) {
+          h.setAttribute('tabindex', '-1')
+        }
+      }
+
+      article.addEventListener('click', e => {
+        const target = e.target
+        if (!(target instanceof HTMLElement)) {
+          return
+        }
+
+        if (target.closest('a, button, input, textarea, select')) {
+          return
+        }
+
+        const heading = target.closest('h1, h2, h3, h4, h5, h6')
+        if (!heading?.id) {
+          return
+        }
+
+        if (location.hash === `#${heading.id}`) {
+          return
+        }
+
+        history.pushState(null, '', `#${heading.id}`)
+      })
+    }
+
+    function init() {
+      renderMermaid()
+      enableHeadingAnchors()
+
+      let themeChangeTimeout: number
+      const handleThemeChange = () => {
+        clearTimeout(themeChangeTimeout)
+        themeChangeTimeout = window.setTimeout(rerenderMermaid, 50)
+      }
+
+      const observer = new MutationObserver(mutations => {
+        for (const m of mutations) {
+          if (m.type === 'attributes' && m.attributeName === 'data-theme') {
+            handleThemeChange()
+            break
+          }
+        }
+      })
+
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      })
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init, { once: true })
+    } else {
+      init()
+    }
+  </script>
+</Layout>

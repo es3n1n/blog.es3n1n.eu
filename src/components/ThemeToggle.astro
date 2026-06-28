@@ -1,0 +1,35 @@
+---
+
+---
+
+<a id='theme-toggle' href='#' aria-label='Toggle theme'>[dark]</a>
+
+<script is:inline>
+  ;(function () {
+    const el = document.getElementById('theme-toggle')
+    if (!el) {
+      return
+    }
+
+    const root = document.documentElement
+    const nextTheme = () =>
+      (root.getAttribute('data-theme') ?? 'light') === 'dark' ? 'light' : 'dark'
+
+    const label = () => {
+      el.textContent = `[${nextTheme()}]`
+    }
+
+    el.addEventListener('click', function (e) {
+      e.preventDefault()
+
+      const next = nextTheme()
+      root.setAttribute('data-theme', next)
+      localStorage.setItem('theme', next)
+
+      label()
+    })
+
+    // run inline so the label is correct before first paint
+    label()
+  })()
+</script>

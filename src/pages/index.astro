@@ -1,0 +1,41 @@
+---
+import { getCollection } from 'astro:content'
+import { SITE_DESCRIPTION, SITE_TITLE } from '../consts'
+import Layout from '../layouts/Layout.astro'
+import { formatDate } from '../utils'
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+)
+---
+
+<Layout title={SITE_TITLE} description={SITE_DESCRIPTION}>
+  <a
+    slot='nav'
+    href='https://es3n1n.eu/'
+    target='_blank'
+    rel='noopener noreferrer'>[contacts]</a
+  >
+
+  <p>
+    welcome to my blog. i write about reverse engineering, security research,
+    and random programming stuff.
+  </p>
+
+  <div class='ascii-sep'></div>
+
+  <p><strong>posts:</strong></p>
+
+  <ul class='post-list'>
+    {
+      posts.map(post => (
+        <li class='post-item'>
+          <span class='post-date'>{formatDate(post.data.date)}</span> -{' '}
+          <a href={`/posts/${post.id}/`}>{post.data.title}</a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <div class='ascii-sep'></div>
+</Layout>
