@@ -1,0 +1,281 @@
+---
+import { scaleLinear } from 'd3-scale'
+import { area, line } from 'd3-shape'
+
+interface Props {
+  data: [number, number][]
+  events?: { t: number; label: string }[]
+  peak?: { t: number; v: number; label: string }
+  domain: [number, number]
+  t0: number
+  step?: number
+  agg?: string
+  yMax?: number
+  title: string
+  color?: string
+  yFormat?: (v: number) => string
+  height?: number
+}
+
+const {
+  data,
+  events = [],
+  peak,
+  domain,
+  t0,
+  step,
+  agg,
+  yMax,
+  title,
+  color = 'var(--accent)',
+  yFormat = (v: number) => String(v),
+  height = 280,
+} = Astro.props
+
+const humanStep = (s: number) =>
+  s >= 3600
+    ? `~${+(s / 3600).toFixed(1)}h/point`
+    : `~${Math.round(s / 60)}m/point`
+
+const W = 860
+const H = height
+const M = { top: 26, right: 16, bottom: 26, left: 48 }
+const iw = W - M.left - M.right
+const ih = H - M.top - M.bottom
+
+const x = scaleLinear()
+  .domain(domain)
+  .range([M.left, M.left + iw])
+const y = scaleLinear()
+  .domain([0, yMax ?? Math.max(...data.map(d => d[1]))])
+  .nice()
+  .range([M.top + ih, M.top])
+  .clamp(true)
+
+const linePath = line<[number, number]>()
+  .x(d => x(d[0]))
+  .y(d => y(d[1]))(data)!
+const areaPath = area<[number, number]>()
+  .x(d => x(d[0]))
+  .y0(y(0))
+  .y1(d => y(d[1]))(data)!
+
+const yTicks = y.ticks(5)
+
+const pad = (n: number) => String(n).padStart(2, '0')
+const span = domain[1] - domain[0]
+const tickStep =
+  span <= 3 * 3600
+    ? 1800
+    : span <= 12 * 3600
+      ? 2 * 3600
+      : span <= 2 * 86400
+        ? 6 * 3600
+        : 86400
+const dayTicks: { x: number; label: string }[] = []
+const firstTick = Math.ceil((t0 + domain[0]) / tickStep) * tickStep
+for (let abs = firstTick; abs <= t0 + domain[1]; abs += tickStep) {
+  const dt = new Date(abs * 1000)
+  const midnight = dt.getUTCHours() === 0 && dt.getUTCMinutes() === 0
+  const label =
+    tickStep < 86400 && !midnight
+      ? `${pad(dt.getUTCHours())}:${pad(dt.getUTCMinutes())}`
+      : `${pad(dt.getUTCMonth() + 1)}-${pad(dt.getUTCDate())}`
+  dayTicks.push({ x: x(abs - t0), label })
+}
+
+const mid = M.left + iw / 2
+const side = (px: number, gap: number) =>
+  px < mid
+    ? { lx: px + gap, anchor: 'start' as const }
+    : { lx: px - gap, anchor: 'end' as const }
+
+const evMarks = events.map(e => {
+  const px = x(e.t)
+  return { x: px, label: e.label, ...side(px, 5) }
+})
+const peakMark = peak && {
+  x: x(peak.t),
+  y: y(peak.v),
+  label: peak.label,
+  ...side(x(peak.t), 7),
+}
+
+const cap = y.domain()[1]
+const spikes: { x: number; v: number }[] = []
+let run: { x: number; v: number } | null = null
+for (const [t, v] of data) {
+  if (v > cap!) {
+    if (!run || v > run.v) run = { x: x(t), v }
+  } else if (run) {
+    spikes.push(run)
+    run = null
+  }
+}
+if (run) spikes.push(run)
+const maxSpike = spikes.length ? Math.max(...spikes.map(s => s.v)) : 0
+const spikeLabel = spikes.length
+  ? side(
+      Math.max(...spikes.map(s => s.x)) < mid
+        ? Math.max(...spikes.map(s => s.x))
+        : Math.min(...spikes.map(s => s.x)),
+      8
+    )
+  : null
+---
+
+<figure class='chart'>
+  <figcaption class='chart-title'>
+    {title}{
+      step && (
+        <span class='chart-step'>
+          {' / '}
+          {humanStep(step)}
+          {agg && ` (${agg})`}
+        </span>
+      )
+    }
+  </figcaption>
+  <svg
+    viewBox={`0 0 ${W} ${H}`}
+    class='chart-svg'
+    role='img'
+    aria-label={title}>
+    {
+      yTicks.map(t => (
+        <g>
+          <line class='grid' x1={M.left} x2={M.left + iw} y1={y(t)} y2={y(t)} />
+          <text
+            class='axis'
+            x={M.left - 7}
+            y={y(t)}
+            dy='0.32em'
+            text-anchor='end'>
+            {yFormat(t)}
+          </text>
+        </g>
+      ))
+    }
+    {
+      dayTicks.map(d => (
+        <text class='axis' x={d.x} y={H - 8} text-anchor='middle'>
+          {d.label}
+        </text>
+      ))
+    }
+
+    <path d={areaPath} class='area' fill={color}></path>
+    <path d={linePath} class='line' fill='none' stroke={color}></path>
+
+    {
+      evMarks.map(e => (
+        <g>
+          <line class='event' x1={e.x} x2={e.x} y1={M.top} y2={M.top + ih} />
+          <text
+            class='event-label'
+            x={e.lx}
+            y={M.top + 11}
+            text-anchor={e.anchor}>
+            {e.label}
+          </text>
+        </g>
+      ))
+    }
+
+    {
+      peakMark && (
+        <g>
+          <circle
+            class='peak'
+            cx={peakMark.x}
+            cy={peakMark.y}
+            r='3.5'
+            fill={color}
+          />
+          <text
+            class='peak-label'
+            x={peakMark.lx}
+            y={peakMark.y}
+            dy='0.32em'
+            text-anchor={peakMark.anchor}>
+            {peakMark.label}
+          </text>
+        </g>
+      )
+    }
+
+    {
+      spikes.map(s => (
+        <path
+          class='spike'
+          fill={color}
+          d={`M${s.x - 3},${M.top} L${s.x},${M.top - 5} L${s.x + 3},${M.top} Z`}
+        />
+      ))
+    }
+    {
+      spikeLabel && (
+        <text
+          class='spike-label'
+          x={spikeLabel.lx}
+          y={M.top + 11}
+          text-anchor={spikeLabel.anchor}>
+          spikes to {Math.round(maxSpike)}%
+        </text>
+      )
+    }
+  </svg>
+</figure>
+
+<style>
+  .chart {
+    margin: 1.5em 0;
+  }
+  .chart-title {
+    color: rgb(var(--gray));
+    margin-bottom: 0.3em;
+  }
+  .chart-step {
+    opacity: 0.7;
+  }
+  .chart-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 1px solid rgb(var(--border));
+    background: rgb(var(--bg));
+  }
+  .grid {
+    stroke: rgb(var(--border));
+    vector-effect: non-scaling-stroke;
+    opacity: 0.5;
+  }
+  .axis {
+    fill: rgb(var(--gray));
+    font-family: inherit;
+    font-size: 12px;
+  }
+  .area {
+    opacity: 0.12;
+  }
+  .line {
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+  }
+  .event {
+    stroke: rgb(var(--text));
+    stroke-dasharray: 3 3;
+    vector-effect: non-scaling-stroke;
+    opacity: 0.55;
+  }
+  .event-label,
+  .peak-label,
+  .spike-label {
+    fill: rgb(var(--text));
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+  }
+</style>

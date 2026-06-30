@@ -1,0 +1,119 @@
+---
+interface Row {
+  region: string
+  reqs: number
+  p50: number
+  p90: number
+}
+
+interface Props {
+  rows: Row[]
+  t1?: number
+  t2?: number
+}
+
+const { rows, t1 = 60, t2 = 160 } = Astro.props
+
+const tier = (ms: number | null) =>
+  ms == null
+    ? 'rgb(var(--gray))'
+    : ms <= t1
+      ? '#34a853'
+      : ms <= t2
+        ? '#f9ab00'
+        : '#ea4335'
+
+const fmt = (n: number) => n.toLocaleString('en-US')
+---
+
+<figure class='lat'>
+  <table class='lat-table'>
+    <thead>
+      <tr>
+        <th class='l'>region</th>
+        <th class='r'>requests</th>
+        <th class='r'>p50</th>
+        <th class='r'>p90</th>
+      </tr>
+    </thead>
+    <tbody>
+      {
+        rows.map(row => (
+          <tr>
+            <td class='l'>
+              <span class='swatch' style={`background:${tier(row.p50)}`} />
+              {row.region}
+            </td>
+            <td class='r num'>{fmt(row.reqs)}</td>
+            <td class='r num strong' style={`color:${tier(row.p50)}`}>
+              {`${row.p50} ms`}
+            </td>
+            <td class='r num dim'>{`${row.p90} ms`}</td>
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+</figure>
+
+<style>
+  .lat {
+    margin: 1.5em 0;
+  }
+  .lat-title {
+    color: rgb(var(--gray));
+    margin-bottom: 0.3em;
+  }
+  .lat-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    border: 1px solid rgb(var(--border));
+  }
+  .lat-table th,
+  .lat-table td {
+    padding: 0.4rem 0.7rem;
+    border-bottom: 1px solid rgb(var(--border));
+  }
+  .lat-table thead th {
+    color: rgb(var(--gray));
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .lat-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  .lat-table tbody tr:hover {
+    background: rgb(var(--gray-light));
+  }
+  .l {
+    text-align: left;
+  }
+  .r {
+    text-align: right;
+  }
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
+  .strong {
+    font-weight: 700;
+  }
+  .dim {
+    color: rgb(var(--gray));
+  }
+  .swatch {
+    display: inline-block;
+    width: 0.6rem;
+    height: 0.6rem;
+    margin-right: 0.5rem;
+    border-radius: 50%;
+    vertical-align: middle;
+  }
+  .lat-note {
+    margin-top: 0.45em;
+    color: rgb(var(--gray));
+    font-size: 0.8rem;
+  }
+</style>

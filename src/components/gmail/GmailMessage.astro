@@ -1,0 +1,343 @@
+---
+import { formatClock, formatStamp, relativeTime } from '../../utils'
+
+interface Recipient {
+  name: string
+  blur?: boolean
+}
+
+interface Props {
+  name: string
+  email: string
+  blurUser?: boolean
+  recipients?: Recipient[]
+  date: string
+  time?: string
+  fullTime?: string
+  avatar?: string
+  avatarColor?: string
+  bodyColor?: string
+  trimmed?: boolean
+  actions?: boolean
+}
+
+const {
+  name,
+  email,
+  blurUser = false,
+  recipients = [],
+  date,
+  time,
+  fullTime,
+  avatar,
+  avatarColor = '#e8633a',
+  bodyColor = '#202124',
+  trimmed = true,
+  actions = true,
+} = Astro.props
+
+const letter = (avatar ?? name.trim().charAt(0)).toUpperCase()
+const [local, domain] = email.split('@')
+
+const sent = new Date(date)
+const clock = time ?? formatClock(sent)
+const since = relativeTime(sent.getTime())
+const title = fullTime ?? formatStamp(sent)
+---
+
+<div class='gm'>
+  <div class='gm-head'>
+    <div class='gm-avatar' style={`background:${avatarColor}`}>{letter}</div>
+    <div class='gm-meta'>
+      <div class='gm-line1'>
+        <span class='gm-from'>
+          <span class='gm-name'>{name}</span>
+          <span class='gm-email'>
+            {'<'}<span class:list={['gm-local', { 'gm-blur': blurUser }]}
+              >{local}</span
+            >{`@${domain}>`}
+          </span>
+        </span>
+        <span class='gm-tools'>
+          <span
+            class='gm-time'
+            title={title}
+            data-gm-since={sent.toISOString()}>
+            <span class='gm-clock'>{clock}</span> (<span class='gm-since'
+              >{since}</span
+            >)
+          </span>
+          <svg class='gm-ic' viewBox='0 0 24 24' aria-hidden='true'
+            ><path
+              d='M22 9.24l-7.19-.62L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.63-7.03L22 9.24zM12 15.4l-3.76 2.27 1-4.28-3.32-2.88 4.38-.38L12 6.1l1.71 4.04 4.38.38-3.32 2.88 1 4.28L12 15.4z'
+            ></path></svg
+          >
+          <svg class='gm-ic' viewBox='0 0 24 24' aria-hidden='true'
+            ><path
+              d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z'
+            ></path></svg
+          >
+          <svg class='gm-ic' viewBox='0 0 24 24' aria-hidden='true'
+            ><path d='M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z'
+            ></path></svg
+          >
+          <svg class='gm-ic' viewBox='0 0 24 24' aria-hidden='true'
+            ><path
+              d='M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z'
+            ></path></svg
+          >
+        </span>
+      </div>
+      {
+        recipients.length > 0 && (
+          <div class='gm-line2'>
+            to{' '}
+            {recipients.map((r, i) => (
+              <>
+                <span class:list={{ 'gm-blur': r.blur }}>{r.name}</span>
+                {i < recipients.length - 1 ? ', ' : ' '}
+              </>
+            ))}
+            <span class='gm-caret'>▾</span>
+          </div>
+        )
+      }
+    </div>
+  </div>
+
+  <div class='gm-body' style={`--gm-body:${bodyColor}`}><slot /></div>
+
+  {
+    trimmed && (
+      <div class='gm-trim' aria-hidden='true'>
+        <>
+          <span />
+          <span />
+          <span />
+        </>
+      </div>
+    )
+  }
+
+  {
+    actions && (
+      <div class='gm-btns'>
+        <button class='gm-btn' type='button'>
+          <svg viewBox='0 0 24 24' aria-hidden='true'>
+            <path d='M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z' />
+          </svg>
+          Reply
+        </button>
+        <button class='gm-btn' type='button'>
+          <svg viewBox='0 0 24 24' aria-hidden='true'>
+            <path d='M7 8V5l-7 7 7 7v-3l-4-4 4-4zm6-3l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11V5z' />
+          </svg>
+          Reply to all
+        </button>
+        <button class='gm-btn' type='button'>
+          <svg viewBox='0 0 24 24' aria-hidden='true'>
+            <path d='M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1 1-5 4-10 11-11z' />
+          </svg>
+          Forward
+        </button>
+        <button
+          class='gm-btn gm-btn-round'
+          type='button'
+          aria-label='Add reaction'>
+          <svg viewBox='0 0 24 24' aria-hidden='true'>
+            <path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z' />
+          </svg>
+        </button>
+      </div>
+    )
+  }
+</div>
+
+<script>
+  import { formatClock, formatStamp, relativeTime } from '../../utils'
+
+  for (const el of document.querySelectorAll<HTMLElement>('[data-gm-since]')) {
+    if (!el.dataset.gmSince) continue
+    const d = new Date(el.dataset.gmSince)
+    const clock = el.querySelector('.gm-clock')
+    if (clock) clock.textContent = formatClock(d)
+    const since = el.querySelector('.gm-since')
+    if (since) since.textContent = relativeTime(d.getTime())
+    el.title = formatStamp(d)
+  }
+</script>
+
+<style>
+  .gm {
+    margin: 1.5em 0;
+    padding: 1rem 1.25rem 1.1rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 0.75rem;
+    background: #fff;
+    color: #202124;
+    font-family:
+      'Google Sans',
+      Roboto,
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      Arial,
+      sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    box-shadow: 0 1px 2px rgba(60, 64, 67, 0.1);
+  }
+  .gm-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .gm-avatar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 500;
+    user-select: none;
+  }
+  .gm-meta {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-top: 2px;
+  }
+  .gm-line1 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .gm-from {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .gm-name {
+    font-weight: 700;
+    color: #202124;
+  }
+  .gm-email {
+    color: #5f6368;
+    font-size: 12px;
+  }
+  .gm-tools {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex: 0 0 auto;
+    color: #5f6368;
+  }
+  .gm-time {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .gm-ic {
+    width: 18px;
+    height: 18px;
+    fill: #5f6368;
+    cursor: pointer;
+  }
+  .gm-ic:hover {
+    fill: #202124;
+  }
+  .gm-line2 {
+    margin-top: 1px;
+    color: #5f6368;
+    font-size: 12px;
+  }
+  .gm-caret {
+    font-size: 10px;
+  }
+  .gm-blur {
+    filter: blur(4.5px);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .gm-local {
+    display: inline-block;
+  }
+  .gm-body {
+    margin-top: 0.85rem;
+    overflow-wrap: anywhere;
+    color: var(--gm-body);
+  }
+  .gm-body :global(p) {
+    margin: 0 0 1em;
+    color: var(--gm-body);
+  }
+  .gm-body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+  .gm-body :global(a) {
+    color: #1a73e8;
+    text-decoration: none;
+  }
+  .gm-body :global(a:hover) {
+    text-decoration: underline;
+  }
+  .gm-trim {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-top: 0.6rem;
+    padding: 3px 7px;
+    border-radius: 8px;
+    background: #f1f3f4;
+    cursor: pointer;
+  }
+  .gm-trim span {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #5f6368;
+  }
+  .gm-btns {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+  .gm-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 1rem;
+    border: 1px solid #dadce0;
+    border-radius: 18px;
+    background: #fff;
+    color: #3c4043;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .gm-btn:hover {
+    background: #f8f9fa;
+    border-color: #d2d3d4;
+  }
+  .gm-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: #5f6368;
+  }
+  .gm-btn-round {
+    padding: 0.45rem;
+    border-radius: 50%;
+  }
+  .gm-btn-round svg {
+    width: 18px;
+    height: 18px;
+  }
+</style>

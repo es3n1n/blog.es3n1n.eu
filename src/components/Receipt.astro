@@ -1,0 +1,198 @@
+---
+interface Line {
+  label: string
+  value: string
+  em?: boolean
+}
+
+interface Props {
+  merchant: string
+  meta?: string[]
+  items: Line[]
+  summary?: Line[]
+  footer?: string[]
+  barcode?: boolean
+}
+
+const {
+  merchant,
+  meta = [],
+  items,
+  summary = [],
+  footer = [],
+  barcode,
+} = Astro.props
+
+let i = 0
+const next = () => i++
+---
+
+<div class='receipt'>
+  <div class='r-paper'>
+    <div class='r-row r-merchant' style={`--i:${next()}`}>{merchant}</div>
+    {
+      meta.map(m => (
+        <div class='r-row r-meta' style={`--i:${next()}`}>
+          {m}
+        </div>
+      ))
+    }
+
+    <div class='r-row r-rule' style={`--i:${next()}`}></div>
+
+    {
+      items.map(it => (
+        <div class='r-row r-line' style={`--i:${next()}`}>
+          <span class='r-label'>{it.label}</span>
+          <span class='r-lead' />
+          <span class='r-value'>{it.value}</span>
+        </div>
+      ))
+    }
+
+    {summary.length > 0 && <div class='r-row r-rule' style={`--i:${next()}`} />}
+    {
+      summary.map(s => (
+        <div
+          class:list={['r-row', 'r-line', { 'r-em': s.em }]}
+          style={`--i:${next()}`}>
+          <span class='r-label'>{s.label}</span>
+          <span class='r-lead' />
+          <span class='r-value'>{s.value}</span>
+        </div>
+      ))
+    }
+
+    <div class='r-row r-rule' style={`--i:${next()}`}></div>
+
+    {
+      footer.map(f => (
+        <div class='r-row r-foot' style={`--i:${next()}`}>
+          {f}
+        </div>
+      ))
+    }
+    {barcode && <div class='r-row r-barcode' style={`--i:${next()}`} />}
+  </div>
+</div>
+
+<script>
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (!reduce) {
+    const io = new IntersectionObserver(
+      (entries, obs) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue
+          e.target.classList.add('printed')
+          obs.unobserve(e.target)
+        }
+      },
+      { threshold: 0.25 }
+    )
+    for (const el of document.querySelectorAll<HTMLElement>('.receipt')) {
+      el.dataset.anim = ''
+      io.observe(el)
+    }
+  }
+</script>
+
+<style>
+  .receipt {
+    display: flex;
+    justify-content: center;
+    margin: 1.75em 0;
+  }
+  .r-paper {
+    width: 23rem;
+    max-width: 100%;
+    padding: 1.4rem 1.3rem 1.1rem;
+    background: rgb(var(--gray-light));
+    color: rgb(var(--text));
+    font-size: 0.82rem;
+    line-height: 1.5;
+    --s: 8px;
+    -webkit-mask:
+      conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg)
+        top / calc(2 * var(--s)) var(--s) repeat-x,
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg)
+        bottom / calc(2 * var(--s)) var(--s) repeat-x,
+      linear-gradient(#000 0 0) center / 100% calc(100% - 2 * var(--s))
+        no-repeat;
+    mask:
+      conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg)
+        top / calc(2 * var(--s)) var(--s) repeat-x,
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg)
+        bottom / calc(2 * var(--s)) var(--s) repeat-x,
+      linear-gradient(#000 0 0) center / 100% calc(100% - 2 * var(--s))
+        no-repeat;
+  }
+
+  .r-merchant {
+    text-align: center;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+  }
+  .r-meta {
+    text-align: center;
+    color: rgb(var(--gray));
+    font-size: 0.76rem;
+  }
+  .r-rule {
+    border-top: 1px dashed rgb(var(--border));
+    margin: 0.6rem 0;
+    height: 0;
+  }
+  .r-line {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5ch;
+  }
+  .r-lead {
+    flex: 1;
+    border-bottom: 1px dotted rgb(var(--gray));
+    opacity: 0.5;
+    transform: translateY(-0.25em);
+  }
+  .r-value {
+    font-variant-numeric: tabular-nums;
+  }
+  .r-em {
+    font-weight: 600;
+  }
+  .r-em .r-value {
+    color: var(--accent);
+  }
+  .r-foot {
+    text-align: center;
+    color: rgb(var(--gray));
+    font-size: 0.72rem;
+    line-height: 1.7;
+  }
+  .r-barcode {
+    height: 2.2rem;
+    margin-top: 0.7rem;
+    background: repeating-linear-gradient(
+      90deg,
+      rgb(var(--text)) 0 2px,
+      transparent 2px 4px,
+      rgb(var(--text)) 4px 7px,
+      transparent 7px 9px,
+      rgb(var(--text)) 9px 10px,
+      transparent 10px 13px
+    );
+    opacity: 0.85;
+  }
+
+  .receipt[data-anim] .r-row {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  .receipt[data-anim].printed .r-row {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.3s ease,
+      transform 0.3s ease;
+    transition-delay: calc(var(--i, 0) * 55ms);
+  }
+</style>

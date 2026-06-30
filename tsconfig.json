@@ -5,6 +5,8 @@
   "compilerOptions": {
     "lib": ["ESNext"],
     "target": "ESNext",
+    "jsx": "preserve",
+    "jsxImportSource": "astro",
     "module": "Preserve",
     "moduleDetection": "force",
     "allowJs": true,

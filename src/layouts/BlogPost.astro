@@ -58,7 +58,7 @@ const { title, description, date } = Astro.props
         themeVariables: {
           fontFamily:
             'IBM Plex Mono, Consolas, Monaco, Lucida Console, monospace',
-          fontSize: '14px',
+          fontSize: '16px',
           textColor: colors.text,
           primaryTextColor: colors.text,
           lineColor: colors.gray,
@@ -87,6 +87,9 @@ const { title, description, date } = Astro.props
 
         const container = document.createElement('div')
         container.className = 'mermaid'
+        if (/%%\s*size:\s*lg\b/i.test(text)) {
+          container.classList.add('mermaid-lg')
+        }
         container.textContent = text
         container.setAttribute('data-source', text)
         node.replaceWith(container)
@@ -94,6 +97,8 @@ const { title, description, date } = Astro.props
 
       if (document.querySelectorAll('.mermaid').length > 0) {
         await mermaid.run({ querySelector: '.mermaid' })
+        recolorMermaidLabels()
+        enhanceMermaidZoom()
       }
     }
 
@@ -122,6 +127,8 @@ const { title, description, date } = Astro.props
       }
 
       await mermaid.run({ querySelector: '.mermaid' })
+      recolorMermaidLabels()
+      enhanceMermaidZoom()
 
       requestAnimationFrame(() => {
         for (const el of diagrams) {
@@ -129,6 +136,159 @@ const { title, description, date } = Astro.props
           el.style.minHeight = ''
         }
       })
+    }
+
+    const mermaidZoomState = new WeakMap<
+      HTMLElement,
+      { scale: number; x: number; y: number }
+    >()
+
+    function enhanceMermaidZoom() {
+      const clamp = (v: number) => Math.min(6, Math.max(0.3, v))
+
+      for (const container of document.querySelectorAll<HTMLElement>(
+        '.mermaid'
+      )) {
+        const getSvg = () =>
+          container.querySelector('svg') as SVGSVGElement | null
+        if (!getSvg()) {
+          continue
+        }
+
+        let st = mermaidZoomState.get(container)
+        if (!st) {
+          st = { scale: 1, x: 0, y: 0 }
+          mermaidZoomState.set(container, st)
+        }
+        const state = st
+
+        const apply = () => {
+          const svg = getSvg()
+          if (!svg) {
+            return
+          }
+          svg.style.transformOrigin = '0 0'
+          svg.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`
+        }
+        const reset = () => {
+          state.scale = 1
+          state.x = 0
+          state.y = 0
+          apply()
+        }
+        apply()
+
+        if (!container.querySelector('.mermaid-zoom')) {
+          const bar = document.createElement('div')
+          bar.className = 'mermaid-zoom'
+          const addBtn = (label: string, title: string, fn: () => void) => {
+            const b = document.createElement('button')
+            b.type = 'button'
+            b.textContent = label
+            b.title = title
+            b.addEventListener('click', e => {
+              e.stopPropagation()
+              fn()
+            })
+            bar.appendChild(b)
+          }
+          addBtn('+', 'Zoom in', () => {
+            state.scale = clamp(state.scale * 1.25)
+            apply()
+          })
+          addBtn('−', 'Zoom out', () => {
+            state.scale = clamp(state.scale / 1.25)
+            apply()
+          })
+          addBtn('↻', 'Reset', reset)
+          container.appendChild(bar)
+        }
+
+        if (container.dataset.zoomBound === '1') {
+          continue
+        }
+        container.dataset.zoomBound = '1'
+        container.classList.add('mermaid-zoomable')
+
+        container.addEventListener(
+          'wheel',
+          e => {
+            if (!e.ctrlKey && !e.metaKey) {
+              return
+            }
+            e.preventDefault()
+            const rect = container.getBoundingClientRect()
+            const px = e.clientX - rect.left
+            const py = e.clientY - rect.top
+            const cur = mermaidZoomState.get(container)
+            if (!cur) {
+              return
+            }
+            const next = clamp(cur.scale * (e.deltaY < 0 ? 1.1 : 1 / 1.1))
+            const k = next / cur.scale
+            cur.x = px - (px - cur.x) * k
+            cur.y = py - (py - cur.y) * k
+            cur.scale = next
+            apply()
+          },
+          { passive: false }
+        )
+
+        let dragging = false
+        let startX = 0
+        let startY = 0
+        container.addEventListener('pointerdown', e => {
+          if (e.pointerType !== 'mouse') {
+            return
+          }
+          if ((e.target as HTMLElement).closest('.mermaid-zoom')) {
+            return
+          }
+          dragging = true
+          startX = e.clientX - state.x
+          startY = e.clientY - state.y
+          container.setPointerCapture(e.pointerId)
+          container.classList.add('grabbing')
+        })
+        container.addEventListener('pointermove', e => {
+          if (!dragging) {
+            return
+          }
+          state.x = e.clientX - startX
+          state.y = e.clientY - startY
+          apply()
+        })
+        const endDrag = () => {
+          dragging = false
+          container.classList.remove('grabbing')
+        }
+        container.addEventListener('pointerup', endDrag)
+        container.addEventListener('pointercancel', endDrag)
+        container.addEventListener('dblclick', e => {
+          if ((e.target as HTMLElement).closest('.mermaid-zoom')) {
+            return
+          }
+          reset()
+        })
+      }
+    }
+
+    function recolorMermaidLabels() {
+      for (const el of document.querySelectorAll<HTMLElement>(
+        '.mermaid .edgeLabel, .mermaid .edgeLabel p, .mermaid .nodeLabel, .mermaid .nodeLabel p, .mermaid .cluster-label, .mermaid .cluster-label p'
+      )) {
+        el.style.setProperty('color', 'rgb(var(--text))', 'important')
+      }
+      for (const el of document.querySelectorAll<SVGElement>(
+        '.mermaid .messageText, .mermaid .noteText, .mermaid .loopText, .mermaid text.actor, .mermaid .actor tspan'
+      )) {
+        el.style.setProperty('fill', 'rgb(var(--text))', 'important')
+      }
+      for (const bg of document.querySelectorAll<HTMLElement>(
+        '.mermaid .labelBkg'
+      )) {
+        bg.style.setProperty('background-color', 'transparent', 'important')
+      }
     }
 
     function enableHeadingAnchors() {
@@ -166,9 +326,83 @@ const { title, description, date } = Astro.props
       })
     }
 
+    function buildTableOfContents() {
+      const article = document.querySelector('article')
+      if (!article) {
+        return
+      }
+      const headings = Array.from(
+        article.querySelectorAll<HTMLElement>(
+          'h1[id], h2[id], h3[id], h4[id], h5[id]'
+        )
+      )
+      if (headings.length < 3) {
+        return
+      }
+
+      document.querySelector('.toc')?.remove()
+      const nav = document.createElement('nav')
+      nav.className = 'toc'
+      nav.setAttribute('aria-label', 'Table of contents')
+
+      const ul = document.createElement('ul')
+      const links: { el: HTMLElement; a: HTMLAnchorElement }[] = []
+      for (const h of headings) {
+        const li = document.createElement('li')
+        li.className = `toc-${h.tagName.toLowerCase()}`
+        const a = document.createElement('a')
+        a.href = `#${h.id}`
+        a.textContent = (h.textContent || '').trim()
+        li.appendChild(a)
+        ul.appendChild(li)
+        links.push({ el: h, a })
+      }
+      nav.appendChild(ul)
+      document.body.appendChild(nav)
+
+      let ticking = false
+      const update = () => {
+        ticking = false
+        const vh = window.innerHeight
+        let firstActive: HTMLElement | null = null
+        let lastActive: HTMLElement | null = null
+        for (let i = 0; i < links.length; i++) {
+          const top = links[i].el.getBoundingClientRect().top
+          const bottom =
+            i + 1 < links.length
+              ? links[i + 1].el.getBoundingClientRect().top
+              : Number.POSITIVE_INFINITY
+          const onScreen = top < vh && bottom > 0
+          links[i].a.classList.toggle('active', onScreen)
+          if (onScreen) {
+            firstActive ??= links[i].a
+            lastActive = links[i].a
+          }
+        }
+        if (firstActive && lastActive && nav.scrollHeight > nav.clientHeight) {
+          const center =
+            (firstActive.offsetTop +
+              lastActive.offsetTop +
+              lastActive.offsetHeight) /
+            2
+          nav.scrollTop = center - nav.clientHeight / 2
+        }
+      }
+      const onScroll = () => {
+        if (!ticking) {
+          ticking = true
+          requestAnimationFrame(update)
+        }
+      }
+      document.addEventListener('scroll', onScroll, { passive: true })
+      window.addEventListener('resize', onScroll, { passive: true })
+      update()
+    }
+
     function init() {
       renderMermaid()
       enableHeadingAnchors()
+      buildTableOfContents()
 
       let themeChangeTimeout: number
       const handleThemeChange = () => {

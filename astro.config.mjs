@@ -44,4 +44,7 @@ export default defineConfig({
       transformers: [transformerNotationDiff()],
     },
   },
+  vite: {
+    optimizeDeps: { include: ['mermaid'] },
+  },
 })

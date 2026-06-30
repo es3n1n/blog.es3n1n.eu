@@ -133,8 +133,18 @@ p {
   margin: 0 0 1em 0;
 }
 
-.prose p {
-  margin-bottom: 1.5em;
+.prose p,
+.prose ul,
+.prose ol,
+.prose pre,
+.prose blockquote,
+.prose table {
+  margin: 0 0 1.1em 0;
+}
+
+.prose p:has(+ ul),
+.prose p:has(+ ol) {
+  margin-bottom: 0.5em;
 }
 
 h1,
@@ -170,6 +180,11 @@ li {
   margin: 0.25em 0;
 }
 
+.prose li > ul,
+.prose li > ol {
+  margin: 0.25em 0 0 0;
+}
+
 ul li::marker {
   content: '- ';
 }
@@ -191,6 +206,7 @@ td {
 }
 
 img {
+  display: block;
   max-width: 100%;
   height: auto;
   margin: 1em 0;
@@ -361,12 +377,96 @@ article h6 {
   scroll-margin-top: 4.5rem;
 }
 
+.tooltip {
+  position: relative;
+  cursor: help;
+  border-bottom: 1px dotted rgb(var(--gray));
+}
+
+.tooltip > .tooltip-content {
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  margin-bottom: 0.5em;
+  z-index: 200;
+  padding: 0.2em 0.5em;
+  background: rgb(var(--bg));
+  border: 1px solid rgb(var(--border));
+  width: max-content;
+  max-width: min(22rem, 80vw);
+  line-height: 1.4;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.1s ease;
+}
+
+.tooltip > .tooltip-content::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 0.5em;
+}
+
+.tooltip:hover > .tooltip-content,
+.tooltip:focus-within > .tooltip-content {
+  opacity: 1;
+  visibility: visible;
+}
+
 .mermaid {
   max-width: 100%;
   overflow: auto;
   margin: 1em 0;
   display: flex;
   justify-content: center;
+}
+
+.mermaid.mermaid-zoomable {
+  position: relative;
+  overflow: hidden;
+  justify-content: flex-start;
+  cursor: grab;
+}
+.mermaid.mermaid-zoomable.grabbing {
+  cursor: grabbing;
+}
+.mermaid.mermaid-zoomable > svg {
+  will-change: transform;
+}
+.mermaid-zoom {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  display: flex;
+  gap: 0.25rem;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.mermaid-zoomable:hover .mermaid-zoom,
+.mermaid-zoomable:focus-within .mermaid-zoom {
+  opacity: 1;
+}
+.mermaid-zoom button {
+  width: 1.7rem;
+  height: 1.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgb(var(--border));
+  border-radius: 0.25rem;
+  background: rgb(var(--bg));
+  color: rgb(var(--text));
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.mermaid-zoom button:hover {
+  background: rgb(var(--gray-light));
 }
 
 .mermaid > svg {
@@ -378,11 +478,34 @@ article h6 {
   margin: 0 auto;
 }
 
+.mermaid.mermaid-lg {
+  width: min(95vw, 1100px);
+  max-width: min(95vw, 1100px);
+  margin-inline: calc(50% - min(47.5vw, 550px));
+  position: relative;
+  z-index: 1;
+  background: rgb(var(--bg));
+}
+.mermaid.mermaid-lg > svg {
+  width: 100% !important;
+  max-width: 100% !important;
+  max-height: none;
+}
+
 .mermaid .edgeLabel rect,
-.mermaid .label rect,
-.mermaid .cluster rect {
+.mermaid .label rect {
   fill: transparent !important;
   stroke: transparent !important;
+}
+
+.mermaid .cluster rect {
+  fill: transparent !important;
+  stroke: rgb(var(--gray)) !important;
+  stroke-width: 1.5px !important;
+  stroke-dasharray: 1 5 !important;
+  stroke-linecap: round !important;
+  rx: 6px;
+  ry: 6px;
 }
 
 .mermaid .node rect,
@@ -400,6 +523,65 @@ article h6 {
 .mermaid .label text,
 .mermaid .node text {
   fill: rgb(var(--text)) !important;
+}
+
+.mermaid .edgeLabel,
+.mermaid .edgeLabel p,
+.mermaid .nodeLabel,
+.mermaid .nodeLabel p,
+.mermaid .cluster-label,
+.mermaid .cluster-label p {
+  color: rgb(var(--text)) !important;
+  background-color: transparent !important;
+}
+
+.toc {
+  position: fixed;
+  top: 5.5rem;
+  left: calc(50% + 20rem);
+  width: 13rem;
+  max-height: calc(100vh - 8rem);
+  overflow-y: auto;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+.toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.toc li {
+  margin: 0.1rem 0;
+}
+.toc a {
+  display: block;
+  padding: 0.1rem 0;
+  color: rgb(var(--gray));
+  text-decoration: none;
+  border-left: 2px solid transparent;
+}
+.toc-h2 a {
+  padding-left: 0.9rem;
+}
+.toc-h3 a {
+  padding-left: 1.8rem;
+}
+.toc-h4 a {
+  padding-left: 2.7rem;
+}
+.toc-h5 a {
+  padding-left: 3.6rem;
+}
+.toc a:hover {
+  color: rgb(var(--text));
+}
+.toc a.active {
+  color: var(--accent);
+}
+@media (max-width: 1200px) {
+  .toc {
+    display: none;
+  }
 }
 
 /* footer */

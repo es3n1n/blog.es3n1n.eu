@@ -1,0 +1,22 @@
+---
+interface Props {
+  link?: string
+  text?: string
+}
+
+const { link, text } = Astro.props
+---
+
+<span class='tooltip' tabindex='0'
+  ><slot /><span class='tooltip-content'
+    >{
+      link ? (
+        <a href={link} target='_blank' rel='noopener noreferrer'>
+          {text ?? link}
+        </a>
+      ) : (
+        text
+      )
+    }</span
+  ></span
+>
